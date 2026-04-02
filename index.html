@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Scheduling Simulator</title>
+    <!-- Modern Font: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fa-solid fa-microchip"></i> RT-Sched
+            </div>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#overview">Overview</a></li>
+                <li><a href="#simulator">Simulator</a></li>
+                <li><a href="#algorithms">Algorithms</a></li>
+                <li><a href="#results">Results</a></li>
+                <li><a href="#graphs">Graphs</a></li>
+                <li><a href="#compare">Comparison</a></li>
+                <li><a href="#about">About</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header id="home" class="hero fade-in">
+        <div class="hero-content">
+            <div class="hero-icon-container">
+                <i class="fa-solid fa-clock-rotate-left hero-icon spin-slow"></i>
+                <i class="fa-solid fa-gears hero-icon secondary-icon"></i>
+            </div>
+            <h1 class="hero-title">Real-Time Scheduling Simulator</h1>
+            <p class="hero-subtitle">Visualization and Analysis of Real-Time CPU Scheduling Algorithms</p>
+            <p class="hero-description">Discover how critical operating systems guarantee task deadlines through advanced static and dynamic priority scheduling methodologies.</p>
+            <div class="hero-buttons">
+                <a href="#simulator" class="btn btn-primary"><i class="fa-solid fa-play"></i> Run Simulation</a>
+                <a href="#algorithms" class="btn btn-secondary"><i class="fa-solid fa-book-open"></i> Explore Algorithms</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="page-container">
+
+        <!-- Project Overview Section -->
+        <section id="overview" class="section fade-in">
+            <div class="section-header">
+                <h2><i class="fa-solid fa-layer-group"></i> Project Overview</h2>
+            </div>
+            <div class="overview-grid">
+                <div class="info-card">
+                    <h3>What is Real-Time Scheduling?</h3>
+                    <p>Real-time operating systems (RTOS) must process data as it comes in, typically without buffering delays. Processing time requirements (including any OS delay) are measured in tenths of seconds or shorter.</p>
+                </div>
+                <div class="info-card">
+                    <h3>Why is it Used?</h3>
+                    <p>It is crucial for systems where a late result is as bad as a wrong result. Applications include pacemakers, anti-lock brakes, aircraft flight controls, and industrial automation.</p>
+                </div>
+                <div class="info-card">
+                    <h3>Focus of this Project</h3>
+                    <p>This simulator compares two pillar algorithms: <strong>Rate Monotonic Scheduling (RMS)</strong>, a static-priority assignment method, and <strong>Earliest Deadline First (EDF)</strong>, a dynamic-priority algorithm.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Simulator Input Section -->
+        <section id="simulator" class="section fade-in">
+            <div class="section-header">
+                <h2><i class="fa-solid fa-sliders"></i> Simulator Configuration</h2>
+                <p>Configure task parameters. For valid real-time periodic schedules, execution time must be less than period (C &lt; T).</p>
+            </div>
+            
+            <div class="simulator-card">
+                <div class="controls-bar">
+                    <div class="task-count-control">
+                        <label for="numTasks">Number of Tasks:</label>
+                        <div class="number-stepper">
+                            <button id="btnMinus" class="stepper-btn"><i class="fa-solid fa-minus"></i></button>
+                            <input type="number" id="numTasks" value="3" min="1" max="10" readonly>
+                            <button id="btnPlus" class="stepper-btn"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <button id="btnLoadSample" class="btn btn-outline"><i class="fa-solid fa-flask"></i> Load Sample Data</button>
+                        <button id="btnReset" class="btn btn-outline danger"><i class="fa-solid fa-rotate-right"></i> Reset</button>
+                    </div>
+                </div>
+
+                <div class="tasks-table-container">
+                    <table class="input-table">
+                        <thead>
+                            <tr>
+                                <th>Task ID</th>
+                                <th>Execution Time (C) <i class="fa-solid fa-info-circle tooltip" title="Time taken by CPU to execute the task"></i></th>
+                                <th>Period (T) <i class="fa-solid fa-info-circle tooltip" title="Time interval between arrivals"></i></th>
+                                <th>Deadline (D) <i class="fa-solid fa-info-circle tooltip" title="Absolute time limit to finish execution"></i></th>
+                            </tr>
+                        </thead>
+                        <tbody id="taskInputsContainer">
+                            <!-- Dynamic Inputs Go Here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="run-section">
+                    <button id="btnRunSim" class="btn btn-primary btn-large glow-effect"><i class="fa-solid fa-rocket"></i> Execute Simulation</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Algorithms Explanation -->
+        <section id="algorithms" class="section fade-in">
+            <div class="section-header">
+                <h2><i class="fa-solid fa-code-branch"></i> Analyzed Algorithms</h2>
+            </div>
+            <div class="algo-cards-grid">
+                <div class="algo-card rms-card">
+                    <div class="algo-icon"><i class="fa-solid fa-arrow-down-short-wide"></i></div>
+                    <h3>Rate Monotonic Scheduling (RMS)</h3>
+                    <div class="tag">Static Priority</div>
+                    <ul class="algo-features">
+                        <li><i class="fa-solid fa-check"></i> Assigns priorities statically before execution.</li>
+                        <li><i class="fa-solid fa-bolt"></i> <strong>Shorter period = Higher priority.</strong></li>
+                        <li><i class="fa-solid fa-check"></i> Simplest and most widely used in practical RTOS.</li>
+                        <li><i class="fa-solid fa-triangle-exclamation"></i> Only guarantees schedulability up to ~69% utilization bound for large sets.</li>
+                    </ul>
+                </div>
+                <div class="algo-card edf-card">
+                    <div class="algo-icon"><i class="fa-solid fa-hourglass-half"></i></div>
+                    <h3>Earliest Deadline First (EDF)</h3>
+                    <div class="tag">Dynamic Priority</div>
+                    <ul class="algo-features">
+                        <li><i class="fa-solid fa-check"></i> Assigns priorities dynamically during execution.</li>
+                        <li><i class="fa-solid fa-bolt"></i> <strong>Earlier absolute deadline = Higher priority.</strong></li>
+                        <li><i class="fa-solid fa-check"></i> Theoretically optimal algorithm.</li>
+                        <li><i class="fa-solid fa-chart-line"></i> Can guarantee schedulability up to 100% CPU utilization.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Hidden Wrapper for Simulation Output -->
+        <div id="simulationOutput" class="hidden">
+            
+            <!-- CPU Utilization & Initial Results -->
+            <section id="results" class="section fade-in">
+                <div class="section-header">
+                    <h2><i class="fa-solid fa-square-poll-vertical"></i> Simulation Results</h2>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fa-solid fa-stopwatch"></i></div>
+                        <div class="stat-info">
+                            <h4>Simulation Horizon</h4>
+                            <p id="calcHyperperiod" class="stat-value">--</p>
+                            <span class="stat-desc">Calculated Hyperperiod (LCM)</span>
+                        </div>
+                    </div>
+                    <div class="stat-card" id="utilCard">
+                        <div class="stat-icon"><i class="fa-solid fa-microchip"></i></div>
+                        <div class="stat-info">
+                            <h4>Total CPU Utilization</h4>
+                            <p id="calcUtilization" class="stat-value">--</p>
+                            <span id="utilDesc" class="stat-desc">--</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                        <div class="stat-info">
+                            <h4>RMS Schedulability</h4>
+                            <p id="rmsBoundResult" class="stat-value text-small">--</p>
+                            <span class="stat-desc">Liu & Layland Bound check</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tables-grid">
+                    <div class="system-table-card">
+                        <h3>Task Synopsis & Priority</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Task</th>
+                                    <th>U (C/T)</th>
+                                    <th>RMS Priority</th>
+                                    <th>EDF Mechanism</th>
+                                </tr>
+                            </thead>
+                            <tbody id="taskSynopsisBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- RMS Result Box -->
+                <div class="algo-result-box rms-box">
+                    <h3><i class="fa-solid fa-list-ol"></i> Rate Monotonic Timeline</h3>
+                    <div id="rmsStatus" class="status-banner"></div>
+                    <div class="gantt-wrapper" id="ganttRMS"></div>
+                </div>
+
+                <!-- EDF Result Box -->
+                <div class="algo-result-box edf-box">
+                    <h3><i class="fa-solid fa-clock"></i> Earliest Deadline First Timeline</h3>
+                    <div id="edfStatus" class="status-banner"></div>
+                    <div class="gantt-wrapper" id="ganttEDF"></div>
+                </div>
+
+            </section>
+
+            <!-- Graphs Section -->
+            <section id="graphs" class="section fade-in">
+                <div class="section-header">
+                    <h2><i class="fa-solid fa-chart-pie"></i> Visual Analytics</h2>
+                    <p>Professional statistical representation of the scheduling execution.</p>
+                </div>
+                
+                <div class="charts-grid-main">
+                    <div class="chart-card span-full">
+                        <h3><i class="fa-solid fa-bars-staggered"></i> CPU Execution Timeline (Gantt Chart Representation)</h3>
+                        <div class="canvas-container large">
+                            <canvas id="ganttChartJS"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <h3><i class="fa-solid fa-chart-simple"></i> System Utilization</h3>
+                        <div class="canvas-container">
+                            <canvas id="utilizationChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <h3><i class="fa-solid fa-circle-half-stroke"></i> CPU State (Busy vs Idle)</h3>
+                        <div class="canvas-container">
+                            <canvas id="pieChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-card span-full">
+                        <h3><i class="fa-solid fa-skull-crossbones"></i> Deadline Miss Analysis</h3>
+                        <div class="canvas-container">
+                            <canvas id="missAnalysisChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Comparison Section -->
+            <section id="compare" class="section fade-in">
+                <div class="section-header">
+                    <h2><i class="fa-solid fa-scale-balanced"></i> RMS vs. EDF Conclusion</h2>
+                </div>
+                <div class="comparison-card">
+                    <table class="compare-table">
+                        <thead>
+                            <tr>
+                                <th>Feature</th>
+                                <th>Rate Monotonic (RMS)</th>
+                                <th>Earliest Deadline First (EDF)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Priority Type</strong></td>
+                                <td>Static (Fixed before runtime)</td>
+                                <td>Dynamic (Changes during runtime)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Priority Criteria</strong></td>
+                                <td>Shorter Period = Higher Priority</td>
+                                <td>Closer Absolute Deadline = Higher Priority</td>
+                            </tr>
+                            <tr>
+                                <td><strong>CPU Utilization Bound</strong></td>
+                                <td>~69.3% (for infinite tasks)</td>
+                                <td>100% (Optimal)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Overload Predictability</strong></td>
+                                <td>Predictable (Lower priority tasks miss first)</td>
+                                <td>Unpredictable (Domino effect may occur)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Implementation Complexity</strong></td>
+                                <td>Low (Simple queue sorting)</td>
+                                <td>High (Continuous deadline tracking)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="final-conclusion">
+                        <h3>Final Verdict for this Simulation</h3>
+                        <p id="finalVerdictText"></p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- About Section -->
+        <section id="about" class="section fade-in">
+            <div class="section-header">
+                <h2><i class="fa-solid fa-graduation-cap"></i> About the Project</h2>
+            </div>
+            <div class="about-container">
+                <div class="about-content">
+                    <p>Designed as an Academic Final Year / College level Operating Systems project focusing on the intricate mechanics of real-time environments. It visually demonstrates the superiority and limitations of static versus dynamic priority assignments.</p>
+                    <p>The code architecture is built using pure modern web technologies (HTML5, CSS3, Vanilla JS) ensuring maximum performance, no heavy framework bloat, and a responsive application interface.</p>
+                    <div class="tech-stack">
+                        <span><i class="fa-brands fa-html5"></i> HTML5</span>
+                        <span><i class="fa-brands fa-css3-alt"></i> CSS3</span>
+                        <span><i class="fa-brands fa-js"></i> JavaScript</span>
+                        <span><i class="fa-solid fa-chart-bar"></i> Chart.js</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand"><i class="fa-solid fa-microchip"></i> Operating Systems Project</div>
+            <p>Developed to demonstrate real-time scheduling concepts beautifully and effectively.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

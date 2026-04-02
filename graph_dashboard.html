@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScheduleVision</title>
+    <!-- Include D3.js -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        :root {
+            --bg-body: #0f172a;
+            --bg-nav: #1e293b;
+            --bg-card: #ffffff;
+            --text-main: #334155;
+            --text-light: #f8fafc;
+            --primary: #3b82f6;
+            --active: #10b981;
+            --waiting: #f59e0b;
+            --processing: #6366f1;
+            --border: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-light);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- Navigation --- */
+        .navbar {
+            background-color: var(--bg-nav);
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--active);
+            padding: 6px 14px;
+            border-radius: 9999px;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--active);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        /* --- Dashboard Layout --- */
+        .dashboard {
+            display: flex;
+            flex: 1;
+            padding: 24px;
+            gap: 24px;
+            overflow: hidden;
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            color: var(--text-main);
+        }
+
+        .card-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+        }
+
+        .card-value {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: var(--bg-nav);
+        }
+
+        .legend {
+            margin-top: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+
+        /* --- Graph Area --- */
+        .graph-container {
+            flex: 1;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-radius: 12px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .graph-header {
+            padding: 20px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(8px);
+        }
+
+        .graph-title {
+            color: var(--text-main);
+            font-weight: 700;
+            font-size: 1.125rem;
+        }
+
+        .timestamp {
+            font-size: 0.75rem;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        #graph-view {
+            flex: 1;
+            width: 100%;
+            height: 100%;
+            cursor: grab;
+        }
+        
+        #graph-view:active {
+            cursor: grabbing;
+        }
+
+        /* --- D3 Elements --- */
+        .node circle {
+            stroke: #ffffff;
+            stroke-width: 3px;
+            transition: fill 0.4s ease;
+        }
+        
+        .node text {
+            font-family: 'Inter', system-ui, sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            fill: #1e293b;
+            text-shadow: 0 1px 3px rgba(255,255,255,0.8);
+            pointer-events: none;
+        }
+
+        .link {
+            stroke: #94a3b8;
+            stroke-opacity: 0.5;
+            stroke-width: 2.5px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+            </svg>
+            ScheduleVision
+        </div>
+        <div class="live-indicator">
+            <div class="dot"></div>
+            Live
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="dashboard">
+        <!-- Sidebar Cards -->
+        <aside class="sidebar">
+            <div class="card">
+                <div class="card-title">Real-Time Task Schedule</div>
+                <div class="card-value" id="current-time">0s</div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Active Nodes</div>
+                <div class="card-value" id="active-nodes">0</div>
+            </div>
+
+            <div class="card" style="flex: 1;">
+                <div class="card-title">Legend</div>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: var(--active);"></div>
+                        Active
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: var(--processing);"></div>
+                        Processing
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: var(--waiting);"></div>
+                        Waiting
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Directed Graph Panel -->
+        <main class="graph-container">
+            <header class="graph-header">
+                <div class="graph-title">Graph View</div>
+                <div class="timestamp" id="last-updated">Last updated: --</div>
+            </header>
+            <div id="graph-view"></div>
+        </main>
+    </div>
+
+    <!-- Application Logic -->
+    <script>
+        // Design configuration
+        const colorPalette = {
+            active: '#10b981',     // Green
+            processing: '#6366f1', // Indigo
+            waiting: '#f59e0b'     // Amber
+        };
+
+        // Graph data initialization
+        const nodesData = [
+            { id: "Task A", type: "waiting" },
+            { id: "CPU Core 1", type: "processing" },
+            { id: "Memory", type: "active" },
+            { id: "Task B", type: "waiting" },
+            { id: "Task C", type: "waiting" },
+            { id: "I/O", type: "active" },
+            { id: "Task D", type: "processing" }
+        ];
+
+        const linksData = [
+            { source: "Task A", target: "CPU Core 1" },
+            { source: "Task B", target: "CPU Core 1" },
+            { source: "CPU Core 1", target: "Memory" },
+            { source: "Task C", target: "I/O" },
+            { source: "I/O", target: "Memory" },
+            { source: "Task D", target: "I/O" }
+        ];
+
+        // Core variables
+        let startTime = Date.now();
+        const timeElement = document.getElementById('current-time');
+        const activeNodesElement = document.getElementById('active-nodes');
+        const lastUpdatedElement = document.getElementById('last-updated');
+        const graphContainer = document.getElementById('graph-view');
+
+        // Setup SVG Canvas
+        const width = graphContainer.clientWidth;
+        const height = graphContainer.clientHeight;
+
+        const svg = d3.select("#graph-view")
+            .append("svg")
+            .attr("width", "100%")
+            .attr("height", "100%")
+            .attr("viewBox", [0, 0, width, height]);
+
+        // Definition for arrowhead markers
+        svg.append("defs").append("marker")
+            .attr("id", "arrow")
+            .attr("viewBox", "0 -5 10 10")
+            .attr("refX", 28) // Offset for circle radius
+            .attr("refY", 0)
+            .attr("markerWidth", 6)
+            .attr("markerHeight", 6)
+            .attr("orient", "auto")
+            .append("path")
+            .attr("d", "M0,-5L10,0L0,5")
+            .attr("fill", "#94a3b8");
+
+        // Force Simulation Configuration
+        const simulation = d3.forceSimulation(nodesData)
+            .force("link", d3.forceLink(linksData).id(d => d.id).distance(150))
+            .force("charge", d3.forceManyBody().strength(-600))
+            .force("center", d3.forceCenter(width / 2, height / 2))
+            .force("collide", d3.forceCollide().radius(45));
+
+        // Render Links (Edges)
+        const link = svg.append("g")
+            .selectAll("line")
+            .data(linksData)
+            .join("line")
+            .attr("class", "link")
+            .attr("marker-end", "url(#arrow)");
+
+        // Render Nodes
+        const node = svg.append("g")
+            .selectAll("g")
+            .data(nodesData)
+            .join("g")
+            .attr("class", "node")
+            .call(d3.drag()
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended));
+
+        // Node Visuals (Circles)
+        node.append("circle")
+            .attr("r", 22)
+            .attr("fill", d => colorPalette[d.type]);
+
+        // Node Labels
+        node.append("text")
+            .attr("dy", 40)
+            .attr("text-anchor", "middle")
+            .text(d => d.id);
+
+        // Simulation update loop
+        simulation.on("tick", () => {
+            link
+                .attr("x1", d => d.source.x)
+                .attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x)
+                .attr("y2", d => d.target.y);
+
+            node
+                .attr("transform", d => `translate(${d.x},${d.y})`);
+        });
+
+        // D3 Drag Event Handlers
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+
+        // --- Real-Time Logic ---
+
+        // Helper to update dashboard stats
+        function updateDashboardStats() {
+            const activeCount = nodesData.filter(n => n.type === 'active').length;
+            activeNodesElement.textContent = activeCount;
+            
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', { hour12: true });
+            lastUpdatedElement.textContent = `Last updated: ${timeString}`;
+        }
+
+        // Timer Increment (1 second)
+        setInterval(() => {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            timeElement.textContent = `${elapsed}s`;
+        }, 1000);
+
+        // Node State Mutator (3 seconds)
+        setInterval(() => {
+            // Select random node
+            const randomIndex = Math.floor(Math.random() * nodesData.length);
+            const targetNode = nodesData[randomIndex];
+            
+            // Generate distinct new state
+            const availableStates = ['active', 'processing', 'waiting'];
+            let newState;
+            do {
+                newState = availableStates[Math.floor(Math.random() * availableStates.length)];
+            } while (newState === targetNode.type);
+            
+            // Apply state change
+            targetNode.type = newState;
+
+            // Trigger visual transition
+            node.selectAll("circle")
+                .transition()
+                .duration(500)
+                .attr("fill", d => colorPalette[d.type]);
+            
+            // Add a slight kinetic pulse to the changed node
+            targetNode.vx += (Math.random() - 0.5) * 15;
+            targetNode.vy += (Math.random() - 0.5) * 15;
+            simulation.alpha(0.05).restart();
+
+            updateDashboardStats();
+        }, 3000);
+
+        // Responsive Resize Handler
+        window.addEventListener('resize', () => {
+            const w = graphContainer.clientWidth;
+            const h = graphContainer.clientHeight;
+            svg.attr("viewBox", [0, 0, w, h]);
+            simulation.force("center", d3.forceCenter(w / 2, h / 2));
+            simulation.alpha(0.3).restart();
+        });
+
+        // Execute initial render
+        updateDashboardStats();
+
+    </script>
+</body>
+</html>
