@@ -4,7 +4,7 @@ import math
 from functools import reduce
 import plotly.graph_objects as go
 
-# -------- LCM Function --------
+
 def lcm(a, b):
     return abs(a * b) // math.gcd(a, b) if a and b else 0
 
