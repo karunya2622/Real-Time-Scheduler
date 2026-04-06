@@ -16,11 +16,10 @@ def get_hyperperiod(tasks):
 # -------- Page Config --------
 st.set_page_config(
     page_title="Real-Time Scheduling Simulator",
-    page_icon="💻",
+    page_icon="💻 ",
     layout="wide"
 )
 
-# -------- Custom CSS --------
 st.markdown("""
 <style>
 .stApp {
