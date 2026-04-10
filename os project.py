@@ -13,7 +13,7 @@ def get_hyperperiod(tasks):
     return reduce(lcm, periods) if periods else 0
 
 
-# -------- Page Config --------
+
 st.set_page_config(
     page_title="Real-Time Scheduling Simulator",
     page_icon="💻 ",
