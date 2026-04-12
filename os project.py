@@ -48,8 +48,6 @@ h2 {
 }
 </style>
 """, unsafe_allow_html=True)
-
-# -------- Title --------
 st.title("Real-Time Scheduling Simulator")
 
 st.write("""
