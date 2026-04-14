@@ -10,8 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const taskInputsContainer = document.getElementById('taskInputsContainer');
     const simulationOutput = document.getElementById('simulationOutput');
-    
-    /* Stats & Tables */
     const calcHyperperiod = document.getElementById('calcHyperperiod');
     const calcUtilization = document.getElementById('calcUtilization');
     const utilDesc = document.getElementById('utilDesc');
